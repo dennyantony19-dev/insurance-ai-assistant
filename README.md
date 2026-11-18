@@ -24,6 +24,7 @@ Developer -> OpenCode (allow/ask/deny rules) -> LiteLLM gateway :4000 -> Bedrock
 | `policies/policy.yaml` | The six policies (P1 to P6). Single source of truth. |
 | `tools/gen_configs.py` | Generates `opencode.json`, `AGENTS.md`, `guardrail/guardrail.json`, `gateway/litellm_config.yaml` |
 | `tools/create_guardrail.py` | Creates or updates the Bedrock guardrail and publishes a version |
+| `tools/run_gateway.py` | Starts the LiteLLM gateway with `.env` loaded (any OS) |
 | `gateway/insurance_guardrail.py` | LiteLLM custom guardrail: local masking, topic checks, audit log |
 | `guardrails_core/` | Shared detectors, topic checks, OpenCode rule model, audit logger |
 | `sample_app/` | Synthetic insurance code used for the demo tasks (T1 to T4) |
@@ -32,22 +33,72 @@ Developer -> OpenCode (allow/ask/deny rules) -> LiteLLM gateway :4000 -> Bedrock
 
 ## Setup (about 30 minutes)
 
-Prerequisites: Python 3.11+, Node 20+, AWS CLI with a profile that can use Bedrock in us-east-1.
+OpenCode is free and open source; it needs no subscription. It calls Claude through this repo's gateway,
+which uses your own AWS Bedrock account, so Bedrock usage is the only cost.
 
-1. **Model access.** In the Bedrock console (us-east-1), confirm access to Claude Sonnet 4.6 and copy its
-   cross-region inference profile ID.
-2. **Install.** `python -m venv .venv && . .venv/bin/activate && pip install -r requirements-dev.txt`
-3. **Configure.** `cp .env.example .env`, then set `AWS_PROFILE`, `BEDROCK_MODEL_ID`, `LITELLM_MASTER_KEY`.
-4. **Generate configs.** `python tools/gen_configs.py`
-5. **Create the guardrail.** `python tools/create_guardrail.py`, then paste the printed `GUARDRAIL_ID` and
-   `GUARDRAIL_VERSION` into `.env`.
-6. **Start the gateway** (terminal 1):
-   `set -a; . ./.env; set +a; litellm --config gateway/litellm_config.yaml --port 4000`
-7. **Install hooks.** `pre-commit install`
-8. **Run the agent** (terminal 2): `npm install -g opencode-ai@1.19.5`, then
-   `export LITELLM_MASTER_KEY=...` and run `opencode` in the repo root.
-   Optional: open the repo in the dev container (`.devcontainer/`) for the sandbox boundary, and set
-   `gateway_base_url` to `http://host.docker.internal:4000/v1` in the policy file, then regenerate.
+Prerequisites: Git, Python 3.11+, Node.js 20+ (includes npm), and the AWS CLI v2 with a profile that can use
+Bedrock in us-east-1 (`aws configure --profile capstone`).
+
+### Windows (PowerShell)
+
+```powershell
+# 1. Get the code
+git clone https://github.com/dennyantony19-dev/insurance-ai-assistant.git
+cd insurance-ai-assistant
+
+# 2. Python environment
+python -m venv .venv
+.venv\Scripts\Activate.ps1          # if blocked: Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+pip install -r requirements-dev.txt
+
+# 3. OpenCode CLI, pinned (OpenCode v2 is the @opencode/cli package; "opencode-ai" is the old v1)
+npm install -g @opencode/cli@2.2.5
+opencode --version                    # expect 2.2.5
+
+# 4. Configure: copy, then edit .env in Notepad (AWS_PROFILE, BEDROCK_MODEL_ID, LITELLM_MASTER_KEY)
+Copy-Item .env.example .env
+notepad .env
+
+# 5. Generate configs and create the Bedrock guardrail
+python tools\gen_configs.py
+$env:AWS_PROFILE = "capstone"
+python tools\create_guardrail.py     # paste the printed GUARDRAIL_ID and GUARDRAIL_VERSION into .env
+python tools\gen_configs.py          # re-run so the gateway config picks up BEDROCK_MODEL_ID
+
+# 6. Terminal 1: start the gateway (leave it running)
+python tools\run_gateway.py
+
+# 7. Terminal 2: run the agent from the repo root
+cd insurance-ai-assistant
+.venv\Scripts\Activate.ps1
+$env:LITELLM_MASTER_KEY = "<same value as in .env>"
+pre-commit install
+opencode
+```
+
+Windows notes: OpenCode documents npm (or the standalone binary from opencode.ai/docs) for Windows; Scoop and
+Chocolatey are not supported. On first run, check that an edit to `policies\policy.yaml` is refused (S16)
+to confirm the path rules match Windows paths.
+
+### macOS / Linux
+
+```bash
+git clone https://github.com/dennyantony19-dev/insurance-ai-assistant.git && cd insurance-ai-assistant
+python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements-dev.txt
+npm install -g @opencode/cli@2.2.5
+cp .env.example .env            # fill AWS_PROFILE, BEDROCK_MODEL_ID, LITELLM_MASTER_KEY
+python tools/gen_configs.py
+AWS_PROFILE=capstone python tools/create_guardrail.py   # paste GUARDRAIL_ID / GUARDRAIL_VERSION into .env
+python tools/gen_configs.py
+python tools/run_gateway.py      # terminal 1
+export LITELLM_MASTER_KEY=...; pre-commit install; opencode   # terminal 2
+```
+
+Where to find `BEDROCK_MODEL_ID`: Bedrock console (us-east-1) > Cross-region inference > Claude Sonnet 4.6 >
+inference profile ID.
+
+Optional sandbox: open the repo in the dev container (`.devcontainer/`, needs Docker Desktop), and set
+`gateway_base_url` to `http://host.docker.internal:4000/v1` in the policy file, then regenerate.
 
 ### Least-privilege IAM for the gateway profile
 

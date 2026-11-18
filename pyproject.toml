@@ -16,6 +16,7 @@ ignore = ["S101"]  # assert is how pytest works
 "tests/**" = ["S", "E501"]
 "tools/gen_configs.py" = ["S105"]
 "tests/security/run_scenarios.py" = ["S603"]
+"tools/run_gateway.py" = ["S603"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

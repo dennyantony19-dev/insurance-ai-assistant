@@ -19,9 +19,12 @@ def test_generated_files_are_up_to_date():
         assert path.read_text(encoding="utf-8") == content, f"{path} is stale"
 
 
-def test_only_gateway_provider_enabled():
-    assert OPENCODE["enabled_providers"] == ["insurance-gateway"]
+def test_only_gateway_provider_allowed():
+    providers = [p for p in OPENCODE["policies"] if p["action"] == "provider.use"]
+    assert evaluate([{**p, "action": "provider"} for p in providers], "provider", "amazon-bedrock") == "deny"
+    assert evaluate([{**p, "action": "provider"} for p in providers], "provider", "insurance-gateway") == "allow"
     assert OPENCODE["model"].startswith("insurance-gateway/")
+    assert list(OPENCODE["providers"]) == ["insurance-gateway"]
 
 
 @pytest.mark.parametrize("cmd,expected", [
