@@ -1,0 +1,11 @@
+{
+  "name": "insurance-ai-assistant sandbox",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "features": { "ghcr.io/devcontainers/features/node:1": { "version": "20" } },
+  "postCreateCommand": "pip install -r requirements-dev.txt && npm install -g opencode-ai@1.19.5 && pre-commit install",
+  "containerEnv": { "LITELLM_MASTER_KEY": "${localEnv:LITELLM_MASTER_KEY}" },
+  "runArgs": ["--add-host=host.docker.internal:host-gateway"],
+  "mounts": [],
+  "remoteUser": "vscode",
+  "//": "Only the workspace folder is mounted. No ~/.aws, no SSH agent. The gateway (with AWS credentials) runs on the host; set gateway_base_url to http://host.docker.internal:4000/v1 in policies/policy.yaml when using this container."
+}

@@ -1,0 +1,22 @@
+[project]
+name = "insurance-ai-assistant"
+version = "0.1.0"
+description = "Governed AI coding assistant for insurance software (capstone prototype)"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S"]
+ignore = ["S101"]  # assert is how pytest works
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "E501"]
+"tools/gen_configs.py" = ["S105"]
+"tests/security/run_scenarios.py" = ["S603"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

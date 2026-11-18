@@ -1,0 +1,40 @@
+# P5 code validation. The agent is denied edit access to this file (policy P4).
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+  - repo: local
+    hooks:
+      - id: policy-configs-in-sync
+        name: generated configs match policies/policy.yaml
+        entry: python tools/gen_configs.py --check
+        language: system
+        pass_filenames: false
+      - id: ruff
+        name: ruff lint
+        entry: ruff check
+        language: system
+        types: [python]
+      - id: bandit
+        name: bandit security scan
+        entry: bandit -q -ll
+        language: system
+        types: [python]
+        exclude: ^tests/
+      - id: semgrep
+        name: semgrep (p/python)
+        entry: semgrep --config p/python --error --quiet
+        language: system
+        types: [python]
+        exclude: ^tests/
+      - id: pii-scan
+        name: PII and secret scan
+        entry: python tools/pii_scan.py
+        language: system
+        exclude: ^(policies/|evidence/|tests/security/scenarios.yaml|tests/test_pii.py|tests/test_guardrail_hook.py|tests/test_topics.py)
+      - id: pytest
+        name: pytest
+        entry: python -m pytest -q
+        language: system
+        pass_filenames: false

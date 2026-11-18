@@ -1,0 +1,4 @@
+# Gateway runtime (tested versions)
+litellm[proxy]==1.110.0
+boto3==1.44.5
+PyYAML==6.0.3
