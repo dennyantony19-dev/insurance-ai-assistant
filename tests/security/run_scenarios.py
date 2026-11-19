@@ -123,7 +123,10 @@ def main() -> int:
     EVIDENCE.mkdir(exist_ok=True)
     (EVIDENCE / "scenario_results.json").write_text(json.dumps(rows, indent=2))
     mode = "live (local + Bedrock)" if args.live else "offline (local layer and generated rules only)"
-    lines = [f"# Scenario results ({mode})", "",
+    live_file = EVIDENCE / "live_run.yaml"
+    live = yaml.safe_load(live_file.read_text()) if live_file.exists() else None
+    live_line = [f"Recorded live run ({live['date']}): {live['result']}", ""] if live else []
+    lines = [f"# Scenario results ({mode})", "", *live_line,
              "| ID | Scenario | Expected | Got | Status | Evidence |", "| --- | --- | --- | --- | --- | --- |"]
     for r in rows:
         lines.append(f"| {r['id']} | {r['title']} | {r['expect']} | {r['got']} | {r['status']} | {r['note']} |")

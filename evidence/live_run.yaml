@@ -1,0 +1,3 @@
+# Live run of `python tests/security/run_scenarios.py --live` on Denny's AWS account.
+date: "2026-11-19"
+result: "17 of 17 automated scenarios PASS (local layer + Bedrock ApplyGuardrail)"
