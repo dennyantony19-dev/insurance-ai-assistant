@@ -65,7 +65,7 @@ notepad .env
 # 5. Generate configs and create the Bedrock guardrail
 python tools\gen_configs.py
 $env:AWS_PROFILE = "capstone"
-python tools\create_guardrail.py     # paste the printed GUARDRAIL_ID and GUARDRAIL_VERSION into .env
+python tools\create_guardrail.py     # saves GUARDRAIL_ID and GUARDRAIL_VERSION into .env for you
 python tools\gen_configs.py          # re-run so the gateway config picks up BEDROCK_MODEL_ID
 
 # 6. Terminal 1: start the gateway (leave it running)
@@ -93,7 +93,7 @@ pipx install semgrep==1.186.0   # separate env: its pins conflict with litellm (
 npm install -g @opencode/cli@2.2.5
 cp .env.example .env            # fill AWS_PROFILE, BEDROCK_MODEL_ID, LITELLM_MASTER_KEY
 python tools/gen_configs.py
-AWS_PROFILE=capstone python tools/create_guardrail.py   # paste GUARDRAIL_ID / GUARDRAIL_VERSION into .env
+AWS_PROFILE=capstone python tools/create_guardrail.py   # saves GUARDRAIL_ID / GUARDRAIL_VERSION into .env
 python tools/gen_configs.py
 python tools/run_gateway.py      # terminal 1
 export LITELLM_MASTER_KEY=...; pre-commit install; opencode   # terminal 2

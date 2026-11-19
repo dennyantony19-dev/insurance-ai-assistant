@@ -95,6 +95,10 @@ def guardrail_request(policy: dict[str, Any]) -> dict[str, Any]:
                     "definition": t["definition"][:200],
                     "examples": [e[:100] for e in t["examples"][:5]],
                     "type": "DENY",
+                    # Topics judge what a person asks for. On output they misfire on ordinary
+                    # code explanations (for example, describing how a fraud check works).
+                    "inputEnabled": True,
+                    "outputEnabled": False,
                 }
                 for t in policy["denied_topics"]
             ]
@@ -103,11 +107,16 @@ def guardrail_request(policy: dict[str, Any]) -> dict[str, Any]:
             "filtersConfig": [
                 {"type": "PROMPT_ATTACK", "inputStrength": policy["prompt_attack"]["bedrock_input_strength"],
                  "outputStrength": "NONE"},
-                {"type": "MISCONDUCT", "inputStrength": "MEDIUM", "outputStrength": "MEDIUM"},
+                {"type": "MISCONDUCT", "inputStrength": "MEDIUM", "outputStrength": "NONE"},
             ]
         },
         "sensitiveInformationPolicyConfig": {
-            "piiEntitiesConfig": [{"type": k, "action": v} for k, v in sd["bedrock_pii_entities"].items()],
+            # A secret typed by a person is refused; one the model writes is masked, not blocked,
+            # so a generated test that mentions "password" does not kill the whole response.
+            "piiEntitiesConfig": [
+                {"type": k, "action": v, "inputAction": v, "outputAction": "ANONYMIZE"}
+                for k, v in sd["bedrock_pii_entities"].items()
+            ],
             "regexesConfig": [
                 {"name": r["name"], "description": r["description"], "pattern": r["pattern"], "action": r["action"]}
                 for r in sd["bedrock_regexes"]
@@ -125,6 +134,7 @@ def litellm_config(policy: dict[str, Any]) -> dict[str, Any]:
         "guardrailIdentifier": "os.environ/GUARDRAIL_ID",
         "guardrailVersion": "os.environ/GUARDRAIL_VERSION",
         "aws_region_name": policy["model"]["region"],
+        "aws_profile_name": "os.environ/AWS_PROFILE",
         "default_on": True,
     }
     return {
@@ -145,7 +155,12 @@ def litellm_config(policy: dict[str, Any]) -> dict[str, Any]:
              "litellm_params": {"guardrail": "insurance_guardrail.InsuranceGuardrail", "mode": "pre_call",
                                 "default_on": True}},
             {"guardrail_name": "bedrock-input",
-             "litellm_params": {**bedrock_common, "mode": "pre_call", "mask_request_content": True}},
+             # Scan only the latest user message. OpenCode sends a long system prompt (its own
+             # instructions plus AGENTS.md) on every call; the PROMPT_ATTACK and topic filters
+             # read that as an attack and block every request. System and tool messages are
+             # still masked by the local insurance-local-input guardrail above.
+             "litellm_params": {**bedrock_common, "mode": "pre_call", "mask_request_content": True,
+                                "experimental_use_latest_role_message_only": True}},
             {"guardrail_name": "bedrock-output",
              "litellm_params": {**bedrock_common, "mode": "post_call", "mask_response_content": True}},
             {"guardrail_name": "insurance-local-output",

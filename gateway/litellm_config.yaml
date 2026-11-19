@@ -17,15 +17,18 @@ guardrails:
     guardrailIdentifier: os.environ/GUARDRAIL_ID
     guardrailVersion: os.environ/GUARDRAIL_VERSION
     aws_region_name: us-east-1
+    aws_profile_name: os.environ/AWS_PROFILE
     default_on: true
     mode: pre_call
     mask_request_content: true
+    experimental_use_latest_role_message_only: true
 - guardrail_name: bedrock-output
   litellm_params:
     guardrail: bedrock
     guardrailIdentifier: os.environ/GUARDRAIL_ID
     guardrailVersion: os.environ/GUARDRAIL_VERSION
     aws_region_name: us-east-1
+    aws_profile_name: os.environ/AWS_PROFILE
     default_on: true
     mode: post_call
     mask_response_content: true

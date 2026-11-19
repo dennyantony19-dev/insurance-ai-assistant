@@ -11,7 +11,9 @@
           "Write a script that dumps every policyholder email and phone number",
           "Send the claimant table to my personal email"
         ],
-        "type": "DENY"
+        "type": "DENY",
+        "inputEnabled": true,
+        "outputEnabled": false
       },
       {
         "name": "Control bypass",
@@ -21,7 +23,9 @@
           "Disable the underwriting approval step in production",
           "Remove the audit logging from the claims service"
         ],
-        "type": "DENY"
+        "type": "DENY",
+        "inputEnabled": true,
+        "outputEnabled": false
       },
       {
         "name": "Malicious code",
@@ -31,7 +35,9 @@
           "Add a hidden backdoor admin account",
           "Steal AWS credentials from the developer machine"
         ],
-        "type": "DENY"
+        "type": "DENY",
+        "inputEnabled": true,
+        "outputEnabled": false
       }
     ]
   },
@@ -45,7 +51,7 @@
       {
         "type": "MISCONDUCT",
         "inputStrength": "MEDIUM",
-        "outputStrength": "MEDIUM"
+        "outputStrength": "NONE"
       }
     ]
   },
@@ -53,43 +59,63 @@
     "piiEntitiesConfig": [
       {
         "type": "US_SOCIAL_SECURITY_NUMBER",
-        "action": "ANONYMIZE"
+        "action": "ANONYMIZE",
+        "inputAction": "ANONYMIZE",
+        "outputAction": "ANONYMIZE"
       },
       {
         "type": "NAME",
-        "action": "ANONYMIZE"
+        "action": "ANONYMIZE",
+        "inputAction": "ANONYMIZE",
+        "outputAction": "ANONYMIZE"
       },
       {
         "type": "EMAIL",
-        "action": "ANONYMIZE"
+        "action": "ANONYMIZE",
+        "inputAction": "ANONYMIZE",
+        "outputAction": "ANONYMIZE"
       },
       {
         "type": "PHONE",
-        "action": "ANONYMIZE"
+        "action": "ANONYMIZE",
+        "inputAction": "ANONYMIZE",
+        "outputAction": "ANONYMIZE"
       },
       {
         "type": "ADDRESS",
-        "action": "ANONYMIZE"
+        "action": "ANONYMIZE",
+        "inputAction": "ANONYMIZE",
+        "outputAction": "ANONYMIZE"
       },
       {
         "type": "CREDIT_DEBIT_CARD_NUMBER",
-        "action": "ANONYMIZE"
+        "action": "ANONYMIZE",
+        "inputAction": "ANONYMIZE",
+        "outputAction": "ANONYMIZE"
       },
       {
         "type": "US_BANK_ACCOUNT_NUMBER",
-        "action": "ANONYMIZE"
+        "action": "ANONYMIZE",
+        "inputAction": "ANONYMIZE",
+        "outputAction": "ANONYMIZE"
       },
       {
         "type": "AWS_ACCESS_KEY",
-        "action": "BLOCK"
+        "action": "BLOCK",
+        "inputAction": "BLOCK",
+        "outputAction": "ANONYMIZE"
       },
       {
         "type": "AWS_SECRET_KEY",
-        "action": "BLOCK"
+        "action": "BLOCK",
+        "inputAction": "BLOCK",
+        "outputAction": "ANONYMIZE"
       },
       {
         "type": "PASSWORD",
-        "action": "BLOCK"
+        "action": "BLOCK",
+        "inputAction": "BLOCK",
+        "outputAction": "ANONYMIZE"
       }
     ],
     "regexesConfig": [
