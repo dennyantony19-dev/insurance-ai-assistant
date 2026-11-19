@@ -50,6 +50,9 @@ cd insurance-ai-assistant
 python -m venv .venv
 .venv\Scripts\Activate.ps1          # if blocked: Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 pip install -r requirements-dev.txt
+# semgrep is installed separately: its pinned dependencies conflict with litellm's
+pip install pipx
+pipx install semgrep==1.186.0         # then open a new terminal so semgrep is on PATH
 
 # 3. OpenCode CLI, pinned (OpenCode v2 is the @opencode/cli package; "opencode-ai" is the old v1)
 npm install -g @opencode/cli@2.2.5
@@ -76,7 +79,8 @@ pre-commit install
 opencode
 ```
 
-Windows notes: OpenCode documents npm (or the standalone binary from opencode.ai/docs) for Windows; Scoop and
+Windows notes: if semgrep will not install or run natively, commit with `$env:SKIP="semgrep"; git commit ...`
+and rely on the CI run, which always runs semgrep. OpenCode documents npm (or the standalone binary from opencode.ai/docs) for Windows; Scoop and
 Chocolatey are not supported. On first run, check that an edit to `policies\policy.yaml` is refused (S16)
 to confirm the path rules match Windows paths.
 
@@ -85,6 +89,7 @@ to confirm the path rules match Windows paths.
 ```bash
 git clone https://github.com/dennyantony19-dev/insurance-ai-assistant.git && cd insurance-ai-assistant
 python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements-dev.txt
+pipx install semgrep==1.186.0   # separate env: its pins conflict with litellm (brew/apt install pipx if missing)
 npm install -g @opencode/cli@2.2.5
 cp .env.example .env            # fill AWS_PROFILE, BEDROCK_MODEL_ID, LITELLM_MASTER_KEY
 python tools/gen_configs.py
