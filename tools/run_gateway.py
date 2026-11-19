@@ -31,14 +31,16 @@ def load_env() -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--port", default="4000")
+    parser.add_argument("--port", type=int, default=4000, choices=range(1024, 65536), metavar="PORT")
     args = parser.parse_args()
     load_env()
     litellm = shutil.which("litellm")
     if not litellm:
         sys.exit("litellm not found. Activate the venv and run: pip install -r requirements.txt")
     config = ROOT / "gateway" / "litellm_config.yaml"
-    return subprocess.call([litellm, "--config", str(config), "--port", args.port, "--host", "127.0.0.1"])
+    # Fixed argument list, no shell, port validated as an integer above, so nothing is interpreted by a shell.
+    cmd = [litellm, "--config", str(config), "--port", str(args.port), "--host", "127.0.0.1"]
+    return subprocess.call(cmd)  # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args
 
 
 if __name__ == "__main__":
